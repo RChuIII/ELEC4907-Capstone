@@ -1,0 +1,16 @@
+{
+    "image_width" : 300,
+    "image_height" : 150,
+    "num_outputs" : 40,
+    "training_batch_size" : 256,
+    "num_epochs" : 50,
+    "input_layers" : 3,
+    "Conv1_output_layers" : 32,
+    "Conv2_output_layers=Conv1_output_layers" : 2,
+    "Conv3_output_layers=Conv2_output_layers" : 2,
+    "conv_filter_size" : 7,
+    "conv_stride" : 1,
+    "maxp_filter_size" : 2,
+    "maxp_stride" : 2,
+    "padding" : 1,
+}
