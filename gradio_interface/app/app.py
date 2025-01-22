@@ -157,10 +157,11 @@ with gr.Blocks() as app:
                 outputs=[validation_model_selector]
             )
 
-# Empty and create directories
-os.makedirs('./data/models_folder', exist_ok=True)
-empty_directory('./data/uploads/Training')
-empty_directory('./data/uploads/Validation')
+if __name__ == "__main__":
+    # Empty and create directories
+    os.makedirs('./data/models_folder', exist_ok=True)
+    empty_directory('./data/uploads/Training')
+    empty_directory('./data/uploads/Validation')
 
-# Launch the Gradio app
-app.launch()
+    # Launch the Gradio app
+    app.launch()

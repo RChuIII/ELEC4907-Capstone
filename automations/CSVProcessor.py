@@ -73,9 +73,11 @@ def process_input_csv(input_file, output_file):
         if image_filename and db_values:
             writer.writerow([image_filename] + db_values)
 
-# Input and output files
-input_file = './3param_10p.csv'  # Replace with your actual input file path
-output_file = './annotations.csv'  # Replace with your desired output file path
+if __name__ == "__main__":
+    # Input and output files
+    input_file = './3param_10p.csv'  # Replace with your actual input file path
+    output_file = './annotations.csv'  # Replace with your desired output file path
 
-# Process the input file and generate the output file
-process_input_csv(input_file, output_file)
+    # Process the input file and generate the output file
+    process_input_csv(input_file, output_file)
+    
