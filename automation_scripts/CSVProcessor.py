@@ -8,15 +8,16 @@ def extract_values_from_filename(filepath):
     Example output: ("folded_double_stub_notch_filter_param", "20", "190", "22")
     """
     # Extract width, length, and height using regex from the file path
-    match = re.search(r'width=([0-9\.]+).*length=([0-9\.]+).*height=([0-9\.]+)', filepath)
+    match = re.search(r'length=([0-9\.]+).*width=([0-9\.]+).*height=([0-9\.]+).*sep=([0-9\.]+)', filepath)
     if match:
-        width = match.group(1)[:-2]
-        length = match.group(2)[:-2]
+        length = match.group(1)[:-2]
+        width = match.group(2)[:-2]
         height = match.group(3)[:-2]
+        sep = match.group(4)[:-2]
         # Return the base filename and the extracted parameters
         base_filename = filepath.split('/')[-1].split(' ')[0].replace('.son', '')
-        return base_filename, width, length, height
-    return None, None, None, None
+        return base_filename, length, width, height, sep
+    return None, None, None, None, None
 
 def write_header(writer):
     """
@@ -51,8 +52,8 @@ def process_input_csv(input_file, output_file):
                     writer.writerow([image_filename] + db_values)
                 
                 # Extract new image filename and parameters
-                filename, width, length, height = extract_values_from_filename(line)
-                image_filename = f'{filename}_height{height}_length{length}_width{width}.png'
+                filename, length, width, height, sep = extract_values_from_filename(line)
+                image_filename = f'{filename}_length{length}_width{width}_height{height}_sep{sep}.png'
                 db_values = []  # Reset DB values for the new filter
                 
             # If the line contains frequency and DB value
@@ -75,8 +76,8 @@ def process_input_csv(input_file, output_file):
 
 if __name__ == "__main__":
     # Input and output files
-    input_file = './3param_10p.csv'  # Replace with your actual input file path
-    output_file = './annotations.csv'  # Replace with your desired output file path
+    input_file = './automation_scripts/LPF_81.csv'  # Replace with your actual input file path
+    output_file = './automation_scripts/annotations.csv'  # Replace with your desired output file path
 
     # Process the input file and generate the output file
     process_input_csv(input_file, output_file)
