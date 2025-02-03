@@ -71,7 +71,7 @@ def take_pic(name: str, bottom_right_corner: list, top_left_corner: list, timing
     cropped_image = screenshot.crop((x1, y1, x2, y2))       # Crop the image from the tlc and brc
     cropped_image = cropped_image.convert("P", palette=Image.ADAPTIVE, colors=(2**bit_depth))   # Convert image to lower colour depth
     cropped_image.save(f"./{name}.png")                     # Save image
-    time.sleep(timing/2)                                         # 💤
+    time.sleep(timing/2)                                    # 💤
     return None
 
 def grab_screenshot(circuit_name: str, 
@@ -83,22 +83,26 @@ def grab_screenshot(circuit_name: str,
                     loc_offBoard: list, 
                     loc_boardCorners: list,
                     loc_okCloseSettings: list,
-                    timing: float
+                    timing: float,
+                    previous_combo: tuple
                     ) -> None:
     out_name = ''
-    click(loc_settings, timing=5)                                             # Open settings window
-    for i in range(len(parameters)):                            # For each parameter...
-        param_name = parameter_names[i]                             # Get parameter name
-        out_name = out_name + f'{param_name}{parameters[i]}_'       # Append to image name
-        double_click(loc_variable, timing, y_diff=(dif_variable * i))             # Click Variable from variable list
-        pyautogui.press('tab')                                      # Move cursor to variable value text box
-        time.sleep(timing/2)                                             # 💤
-        pyautogui.write(str(parameters[i]))                         # Write the variable value in the text box
-        time.sleep(timing/2)                                             # 💤
-        pyautogui.press('enter')                                    # Close variable window
-        time.sleep(timing/2)                                             # 💤
-    click(loc_okCloseSettings, timing)                                      # Click OK (i.e. exit settings window)
-    click(loc_offBoard, timing)                                             # Move cursor out of the screenshot area
+    click(loc_settings, timing=5)                                       # Open settings window
+    for i in range(len(parameters)):                                    # For each parameter...
+        if previous_combo[i] == parameters[i]:                          # If a parameter is the same as the previous parameter value...
+            continue                                                    # Skip to save time.
+        else:
+            param_name = parameter_names[i]                                 # Get parameter name
+            out_name = out_name + f'{param_name}{parameters[i]}_'           # Append to image name
+            double_click(loc_variable, timing, y_diff=(dif_variable * i))   # Click Variable from variable list
+            pyautogui.press('tab')                                          # Move cursor to variable value text box
+            time.sleep(timing/2)                                            # 💤
+            pyautogui.write(str(parameters[i]))                             # Write the variable value in the text box
+            time.sleep(timing/2)                                            # 💤
+            pyautogui.press('enter')                                        # Close variable window
+            time.sleep(timing/2)                                            # 💤
+    click(loc_okCloseSettings, timing)                                  # Click OK (i.e. exit settings window)
+    click(loc_offBoard, timing)                                         # Move cursor out of the screenshot area
     take_pic(f'./automation_scripts/Images/{circuit_name}/{circuit_name}_{out_name}'[:-1],     # Take and save image
             loc_boardCorners[0], 
             loc_boardCorners[1],
@@ -109,8 +113,8 @@ def main(circuit_name: str, circuit_params: list) -> None:
     combinations = generate_sweep_parameters(circuit_params)    # Create all possible circuit variations
     parameter_names = [param[0] for param in circuit_params]    # Get parameter names 
 
+    previous_combo = (0,0,0,0)
     for combination in combinations:                            # For each variation, take a screenshot of the circuit
-        # print(combination)
         grab_screenshot(circuit_name=circuit_name,
                         parameters=combination,
                         parameter_names=parameter_names,
@@ -120,8 +124,10 @@ def main(circuit_name: str, circuit_params: list) -> None:
                         loc_offBoard=Circuits.off_board_location,
                         loc_boardCorners=Circuits.board_locations,
                         loc_okCloseSettings=Circuits.ok_settings_button_location,
-                        timing=1
+                        timing=1,
+                        previous_combo=previous_combo
         )
+        previous_combo = combination
     return None
 
 if __name__ == "__main__":
