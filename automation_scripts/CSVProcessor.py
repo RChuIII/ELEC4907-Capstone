@@ -1,43 +1,44 @@
 import csv
 import re
 
-def extract_values_from_filename(filepath):
+def extract_values_from_filename(filepath, parameter_names, param_order):
     """
     Extract filter parameters (width, length, height) and construct the image filename.
     Example input: "/home/vrajshah4/Desktop/4907_Test/folded_double_stub_notch_filter_param.son DE_EMBEDDED width=20.0 length=190.0 height=22.0"
     Example output: ("folded_double_stub_notch_filter_param", "20", "190", "22")
     """
     # Extract width, length, and height using regex from the file path
-    match = re.search(r'length=([0-9\.]+).*width=([0-9\.]+).*height=([0-9\.]+).*sep=([0-9\.]+)', filepath)
+    find_str = rf'{parameter_names[param_order[0] - 1]}=([\d.]+)\s+{parameter_names[param_order[1] - 1]}=([\d.]+)\s+{parameter_names[param_order[2] - 1]}=([\d.]+)\s+{parameter_names[param_order[3] - 1]}=([\d.]+)'
+    match = re.search(find_str, filepath)
+
     if match:
-        length = match.group(1)[:-2]
-        width = match.group(2)[:-2]
-        height = match.group(3)[:-2]
-        sep = match.group(4)[:-2]
-        # Return the base filename and the extracted parameters
         base_filename = filepath.split('/')[-1].split(' ')[0].replace('.son', '')
-        return base_filename, length, width, height, sep
-    return None, None, None, None, None
+        formatted_params = {}
+        for i in range(len(match.groups())):
+            formatted_params[parameter_names[param_order[i] - 1]] = match.group(i+1)
+        return base_filename, formatted_params
+    return None, None
 
 def write_header(writer):
     """
     Write the header to the output CSV file. The header will include frequencies in the format f1, f1.5, f2, f2.5, ...
     """
-    # frequencies = [f"f{i/2}" for i in range(2, 41)]  # Frequencies from 1 GHz to 20 GHz, every 0.5 GHz
+    # frequencies = [f"f{i/4}" for i in range(4, 81)]  # Frequencies from 1 GHz to 20 GHz, every 0.5 GHz
     frequencies = [f"f{i/20}" for i in range(20, 401)]  # Frequencies from 1 GHz to 20 GHz, every 0.05 GHz
     header = ["Image Name"] + frequencies  # Add "Image Name" and frequency labels
     writer.writerow(header)
 
 
-def process_input_csv(input_file, output_file):
+def process_input_csv(mode, input_file, output_file, parameter_names, param_order):
     """
     Process the input CSV file and generate the required output CSV format.
     """
-    with open(input_file, 'r') as infile, open(output_file, 'w', newline='') as outfile:
+    with open(input_file, 'r') as infile, open(output_file, mode, newline='') as outfile:
         reader = infile.readlines()
         writer = csv.writer(outfile)
         
-        write_header(writer)
+        if mode == 'w':
+            write_header(writer)
 
         image_filename = None
         db_values = []
@@ -52,8 +53,8 @@ def process_input_csv(input_file, output_file):
                     writer.writerow([image_filename] + db_values)
                 
                 # Extract new image filename and parameters
-                filename, length, width, height, sep = extract_values_from_filename(line)
-                image_filename = f'{filename}_length{length}_width{width}_height{height}_sep{sep}.png'
+                filename, params = extract_values_from_filename(line, parameter_names, param_order)
+                image_filename = f'{filename}_{parameter_names[0]}{params[parameter_names[0]]}_{parameter_names[1]}{params[parameter_names[1]]}_{parameter_names[2]}{params[parameter_names[2]]}_{parameter_names[3]}{params[parameter_names[3]]}.png'
                 db_values = []  # Reset DB values for the new filter
                 
             # If the line contains frequency and DB value
@@ -66,8 +67,8 @@ def process_input_csv(input_file, output_file):
                 db_value = float(db_value)
                 
                 # Check if the frequency is a multiple of 0.5 GHz
-                # if frequency % 0.5 == 0:
-                #     db_values.append(db_value)
+                # if frequency % 0.25 == 0:
+                    # db_values.append(db_value)
                 db_values.append(db_value)
         
         # Don't forget to write the last set of data after the loop
@@ -76,9 +77,10 @@ def process_input_csv(input_file, output_file):
 
 if __name__ == "__main__":
     # Input and output files
-    input_file = './automation_scripts/LPF_81.csv'  # Replace with your actual input file path
     output_file = './automation_scripts/annotations.csv'  # Replace with your desired output file path
-
+    mode = 'a'
     # Process the input file and generate the output file
-    process_input_csv(input_file, output_file)
-    
+    process_input_csv('w', './automation_scripts/LPF_S21.csv', output_file, ['length', 'width', 'height', 'sep'], [1,4,2,3])
+    process_input_csv(mode, './automation_scripts/HPF_S21.csv', output_file, ['width', 'width2', 'height', 'sep'], [2,4,3,1])
+    process_input_csv(mode, './automation_scripts/BPF_S21.csv', output_file, ['length', 'length2', 'height', 'sep'], [1,3,2,4])
+    process_input_csv(mode, './automation_scripts/notch_S21.csv', output_file, ['length', 'width', 'height', 'sep'], [1,2,3,4])
