@@ -1,3 +1,10 @@
 # ELEC4907-Capstone
 ## Abstract
 The goal of this project was use existing deep learning techniques and frameworks to develop a neural network capable of predicting the frequency response of microstrip filters within the ultra high (UHF) and super high (SHF) microwave frequency bands, more specifically between 1 and 20 GHz. Using data collected from simulations, a convolutional neural network (CNN) will be trained using the PyTorch deep learning framework to recognize and analyze images of circuits to predict their frequency responses much faster than traditional simulations. The motivation behind this project is to streamline the circuit design process by replacing simulations early in the design process with our neural network predictions, reducing overall cost and effort.
+
+
+## Results
+#### Training Metric Plot
+![Training Metric Plot](https://github.com/RChuIII/ELEC4907-Capstone/blob/main/readme_images/training_metrics_plot.png?raw=true)
+#### Model Output
+![Model Output](https://github.com/RChuIII/ELEC4907-Capstone/blob/main/readme_images/result_example.png?raw=true)
